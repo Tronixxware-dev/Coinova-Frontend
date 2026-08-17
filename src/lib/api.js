@@ -68,6 +68,7 @@ export const api = {
 
   // Staking
   getStaking: (token) => request('/staking', { token }),
+  getStakingHistory: (token) => request('/staking/history', { token }),
   stake: (token, payload) => request('/staking/stake', { method: 'POST', body: payload, token }),
   withdrawStaking: (token, payload) => request('/staking/withdraw', { method: 'POST', body: payload, token }),
 

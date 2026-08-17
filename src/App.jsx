@@ -7,6 +7,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Balance from './pages/Balance';
 import Trade from './pages/Trade';
+import Staking from './pages/Staking';
 import Account from './pages/Account';
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Trade />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staking"
+          element={
+            <ProtectedRoute>
+              <Staking />
             </ProtectedRoute>
           }
         />
