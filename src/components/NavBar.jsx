@@ -1,5 +1,7 @@
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import SupportModal from './SupportModal';
 
 const desktopLinkClass = ({ isActive }) =>
   `text-sm font-medium px-3 py-1.5 rounded-lg transition ${
@@ -48,6 +50,16 @@ function AccountIcon({ className }) {
   );
 }
 
+function HelpIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2 1.8-2 3.5" />
+      <path d="M12 17h.01" />
+    </svg>
+  );
+}
+
 const NAV_ITEMS = [
   { to: '/', end: true, label: 'Balance', icon: BalanceIcon },
   { to: '/trade', end: false, label: 'Trade', icon: TradeIcon },
@@ -55,12 +67,73 @@ const NAV_ITEMS = [
   { to: '/account', end: false, label: 'Account', icon: AccountIcon },
 ];
 
+function initialsFor(user) {
+  const source = user?.username || user?.email || '?';
+  return source.slice(0, 2).toUpperCase();
+}
+
+function AvatarBadge({ user, className = '' }) {
+  if (user?.avatarDataUrl) {
+    return <img src={user.avatarDataUrl} alt="" className={`rounded-full object-cover ${className}`} />;
+  }
+  return (
+    <div
+      className={`rounded-full bg-emerald-500 text-slate-900 font-semibold flex items-center justify-center ${className}`}
+    >
+      {initialsFor(user)}
+    </div>
+  );
+}
+
+function AccountMenu({ user, logout }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="block rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        aria-label="Account menu"
+      >
+        <AvatarBadge user={user} className="w-9 h-9 text-sm" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 mt-2 w-52 bg-slate-800 border border-slate-700 rounded-lg shadow-lg py-1 z-50">
+            <div className="px-3 py-2 border-b border-slate-700/50">
+              <p className="text-sm font-medium text-white truncate">{user?.username}</p>
+              <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+            </div>
+            <Link
+              to="/account"
+              onClick={() => setOpen(false)}
+              className="block px-3 py-2 text-sm text-slate-300 hover:bg-slate-700"
+            >
+              Account Settings
+            </Link>
+            <button
+              onClick={() => {
+                setOpen(false);
+                logout();
+              }}
+              className="block w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-slate-700"
+            >
+              Log out
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function NavBar() {
   const { user, logout } = useAuth();
+  const [supportOpen, setSupportOpen] = useState(false);
 
   return (
-    <>
-      {/* Desktop: full nav in the top bar. Mobile: just branding + logout, links move to the bottom tab bar below. */}
+    <div>
+      {/* Desktop: full nav in the top bar. Mobile: just branding + avatar/help, links move to the bottom tab bar below. */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-6">
           <h1 className="text-2xl font-bold">Coinova</h1>
@@ -72,14 +145,16 @@ export default function NavBar() {
             ))}
           </nav>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-slate-400 text-sm hidden sm:inline">{user?.username}</span>
+        <div className="flex items-center gap-3">
           <button
-            onClick={logout}
-            className="bg-slate-800 hover:bg-slate-700 text-sm rounded-lg px-4 py-2 transition"
+            onClick={() => setSupportOpen(true)}
+            className="text-slate-400 hover:text-white transition p-1.5 rounded-full hover:bg-slate-800"
+            aria-label="Contact support"
+            title="Ask a question or report an issue"
           >
-            Log out
+            <HelpIcon className="w-5 h-5" />
           </button>
+          <AccountMenu user={user} logout={logout} />
         </div>
       </div>
 
@@ -92,6 +167,8 @@ export default function NavBar() {
           </NavLink>
         ))}
       </nav>
-    </>
+
+      <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
+    </div>
   );
 }

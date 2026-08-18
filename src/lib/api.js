@@ -76,4 +76,10 @@ export const api = {
   changePassword: (token, payload) => request('/account/password', { method: 'PATCH', body: payload, token }),
   changeEmail: (token, payload) => request('/account/email', { method: 'PATCH', body: payload, token }),
   deleteAccount: (token, payload) => request('/account', { method: 'DELETE', body: payload, token }),
+  updateAvatar: (token, payload) => request('/account/avatar', { method: 'PATCH', body: payload, token }),
+  removeAvatar: (token) => request('/account/avatar', { method: 'DELETE', token }),
+
+  // support
+  submitSupportTicket: (token, payload) => request('/support', { method: 'POST', body: payload, token }),
+  getSupportTickets: (token) => request('/support', { token }),
 };
