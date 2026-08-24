@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { usePrices } from '../hooks/usePrices';
 import NavBar from '../components/NavBar';
 import WalletPanel from '../components/WalletPanel';
+import CryptoWalletPanel from '../components/CryptoWalletPanel';
 
 function usdFormat(n) {
   return Number(n).toLocaleString(undefined, {
@@ -172,6 +173,10 @@ export default function Balance() {
             Manage Staking →
           </Link>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <CryptoWalletPanel accessToken={accessToken} onBalanceChange={refreshWallet} />
       </div>
     </div>
   );

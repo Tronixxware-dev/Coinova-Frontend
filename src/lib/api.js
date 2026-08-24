@@ -55,6 +55,9 @@ export const api = {
   deposit: (token, payload) => request('/wallet/deposit', { method: 'POST', body: payload, token }),
   withdraw: (token, payload) => request('/wallet/withdraw', { method: 'POST', body: payload, token }),
 
+    // Crypto (real testnet blockchain)
+  getDepositAddress: (token, chain) => request(`/deposit/${chain}/address`, { token }),
+  withdrawOnchain: (token, chain, payload) => request(`/deposit/${chain}/withdraw`, { method: 'POST', body: payload, token }),
   // Orders
   placeOrder: (token, payload) => request('/orders', { method: 'POST', body: payload, token }),
   getOrders: (token, params) => request(`/orders${buildQuery(params)}`, { token }),
