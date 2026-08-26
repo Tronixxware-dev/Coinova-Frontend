@@ -140,12 +140,12 @@ export default function SelfCustodyBtcPanel() {
           <p className="text-emerald-400 text-sm break-all">
             Sent!{' '}
             <a
-              href={`https://mempool.space/testnet/tx/${txid}`}
+              href={`https://blockstream.info/testnet/tx/${txid}`}
               target="_blank"
               rel="noreferrer"
               className="underline"
             >
-              View on mempool.space
+              View on Blockstream
             </a>
           </p>
         )}

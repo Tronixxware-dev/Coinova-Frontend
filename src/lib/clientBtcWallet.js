@@ -8,7 +8,7 @@ const bip32 = BIP32Factory(ecc);
 
 const NETWORK = bitcoin.networks.testnet; // switch to bitcoin.networks.bitcoin for mainnet later
 const DERIVATION_PATH = "m/84'/1'/0'/0/0"; // BIP84 native SegWit, testnet coin type
-const API_BASE = 'https://mempool.space/testnet/api';
+const API_BASE = 'https://blockstream.info/testnet/api';
 const DUST_SATS = 546;
 
 function deriveNode(mnemonicPhrase) {
@@ -50,10 +50,14 @@ async function fetchUtxos(address) {
 }
 
 async function fetchFeeRate() {
-  const res = await fetch(`${API_BASE}/v1/fees/recommended`);
-  if (!res.ok) return 2; // sane fallback sat/vByte if the fee API is unreachable
-  const data = await res.json();
-  return data.hourFee || data.economyFee || 2;
+  try {
+    const res = await fetch(`${API_BASE}/fee-estimates`);
+    if (!res.ok) return 2;
+    const data = await res.json();
+    return data['6'] || data['3'] || 2;
+  } catch {
+    return 2;
+  }
 }
 
 export async function sendBtc({ mnemonicPhrase, toAddress, amountSats }) {
