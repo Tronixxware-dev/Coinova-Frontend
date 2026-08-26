@@ -5,6 +5,7 @@ import { usePrices } from '../hooks/usePrices';
 import NavBar from '../components/NavBar';
 import WalletPanel from '../components/WalletPanel';
 import SelfCustodyWalletPanel from '../components/SelfCustodyWalletPanel';
+import SelfCustodyBtcPanel from '../components/SelfCustodyBtcPanel';
 
 function usdFormat(n) {
   return Number(n).toLocaleString(undefined, {
@@ -124,9 +125,10 @@ export default function Balance() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         <WalletPanel wallets={wallets} onDeposit={handleDeposit} onWithdraw={handleWithdraw} busy={walletBusy} />
         <SelfCustodyWalletPanel />
+        <SelfCustodyBtcPanel />
       </div>
     </div>
   );
