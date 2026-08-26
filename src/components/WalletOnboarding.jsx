@@ -6,15 +6,12 @@ const STEPS = {
   INTRO: 'intro',
   REVEAL: 'reveal',
   CONFIRM: 'confirm',
-  PASSWORD: 'password',
 };
 
-export default function WalletOnboarding({ onWalletReady }) {
+export default function WalletOnboarding({ password, onWalletReady }) {
   const [step, setStep] = useState(STEPS.INTRO);
   const [wallet, setWallet] = useState(null);
   const [confirmInput, setConfirmInput] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const { setUnlockedWallet } = useWallet();
@@ -25,22 +22,9 @@ export default function WalletOnboarding({ onWalletReady }) {
     setStep(STEPS.REVEAL);
   }
 
-  function handleConfirmPhrase() {
+  async function handleConfirmPhrase() {
     if (confirmInput.trim().toLowerCase() !== wallet.mnemonic.phrase.trim().toLowerCase()) {
       setError("That doesn't match your recovery phrase. Please re-check and try again.");
-      return;
-    }
-    setError('');
-    setStep(STEPS.PASSWORD);
-  }
-
-  async function handleSetPassword() {
-    if (password.length < 8) {
-      setError('Wallet password must be at least 8 characters.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
       return;
     }
     setError('');
@@ -51,7 +35,7 @@ export default function WalletOnboarding({ onWalletReady }) {
       setUnlockedWallet(wallet);
       onWalletReady(wallet);
     } catch (err) {
-      setError('Something went wrong encrypting your wallet. Please try again.');
+      setError('Something went wrong setting up your wallet. Please try again.');
       setBusy(false);
     }
   }
@@ -70,7 +54,9 @@ export default function WalletOnboarding({ onWalletReady }) {
           <p className="text-sm text-slate-400">
             This wallet is created entirely on your device. Coinova never sees or stores
             your private key or recovery phrase — which also means we can never recover
-            it for you if it's lost. You're fully responsible for keeping it safe.
+            it for you if it's lost. You're fully responsible for keeping it safe. It's
+            automatically secured using the same password you use to log in — no separate
+            wallet password to remember.
           </p>
           <button onClick={handleGenerate} className={buttonClass}>
             Create Wallet
@@ -100,54 +86,18 @@ export default function WalletOnboarding({ onWalletReady }) {
     );
   }
 
-  if (step === STEPS.CONFIRM) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
-        <div className={cardClass}>
-          <h1 className="text-2xl font-bold text-white text-center">Confirm Your Phrase</h1>
-          <p className="text-sm text-slate-400">
-            Type your 12-word phrase back in to confirm you saved it correctly.
-          </p>
-          <textarea
-            value={confirmInput}
-            onChange={(e) => setConfirmInput(e.target.value)}
-            placeholder="Enter your 12-word phrase"
-            rows={3}
-            className={inputClass}
-          />
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/40 text-red-400 text-sm rounded-lg px-3 py-2">
-              {error}
-            </div>
-          )}
-          <button onClick={handleConfirmPhrase} className={buttonClass}>
-            Confirm
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
       <div className={cardClass}>
-        <h1 className="text-2xl font-bold text-white text-center">Set a Wallet Password</h1>
+        <h1 className="text-2xl font-bold text-white text-center">Confirm Your Phrase</h1>
         <p className="text-sm text-slate-400">
-          This password encrypts your wallet on this device only. It's separate from your
-          Coinova login password — choose something different.
+          Type your 12-word phrase back in to confirm you saved it correctly.
         </p>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Wallet password (min 8 characters)"
-          className={inputClass}
-        />
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Confirm password"
+        <textarea
+          value={confirmInput}
+          onChange={(e) => setConfirmInput(e.target.value)}
+          placeholder="Enter your 12-word phrase"
+          rows={3}
           className={inputClass}
         />
         {error && (
@@ -155,8 +105,8 @@ export default function WalletOnboarding({ onWalletReady }) {
             {error}
           </div>
         )}
-        <button onClick={handleSetPassword} disabled={busy} className={buttonClass}>
-          {busy ? 'Encrypting…' : 'Encrypt & Finish'}
+        <button onClick={handleConfirmPhrase} disabled={busy} className={buttonClass}>
+          {busy ? 'Setting up your wallet…' : 'Confirm'}
         </button>
       </div>
     </div>

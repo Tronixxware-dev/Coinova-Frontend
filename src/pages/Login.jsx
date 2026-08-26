@@ -1,32 +1,48 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useWallet } from '../context/WalletContext';
 import WalletUnlock from '../components/WalletUnlock';
 
 export default function Login() {
   const { login, loading, error } = useAuth();
+  const { unlock, hasWalletOnDevice } = useWallet();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showWalletUnlock, setShowWalletUnlock] = useState(false);
+  const [needsWalletRecovery, setNeedsWalletRecovery] = useState(false);
+  const [walletSyncing, setWalletSyncing] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     try {
       await login({ email, password });
-      setShowWalletUnlock(true);
+      setWalletSyncing(true);
+      if (hasWalletOnDevice) {
+        const ok = await unlock(password);
+        if (ok) {
+          navigate('/', { replace: true });
+          return;
+        }
+      }
+      // Either no wallet exists on this device yet, or it couldn't be
+      // unlocked with the current login password (e.g. the account
+      // password changed since the wallet was set up) — fall back to
+      // recovery-phrase import, which re-links it automatically.
+      setWalletSyncing(false);
+      setNeedsWalletRecovery(true);
     } catch {
       // error is already surfaced via context
     }
   }
 
-  function handleUnlocked() {
+  function handleRecovered() {
     navigate('/', { replace: true });
   }
 
-  if (showWalletUnlock) {
-    return <WalletUnlock onUnlocked={handleUnlocked} />;
+  if (needsWalletRecovery) {
+    return <WalletUnlock password={password} onUnlocked={handleRecovered} />;
   }
 
   return (
@@ -53,7 +69,12 @@ export default function Login() {
         </div>
 
         <div>
-          <label className="block text-sm text-slate-300 mb-1">Password</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm text-slate-300">Password</label>
+            <Link to="/forgot-password" className="text-xs text-emerald-400 hover:underline">
+              Forgot password?
+            </Link>
+          </div>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
@@ -76,10 +97,10 @@ export default function Login() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || walletSyncing}
           className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-900 font-semibold rounded-lg py-2 transition"
         >
-          {loading ? 'Logging in…' : 'Log in'}
+          {loading ? 'Logging in…' : walletSyncing ? 'Unlocking wallet…' : 'Log in'}
         </button>
         <p className="text-sm text-slate-400 text-center">
           Don't have an account?{' '}

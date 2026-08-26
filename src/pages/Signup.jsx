@@ -26,7 +26,7 @@ export default function Signup() {
   }
 
   if (showWalletSetup) {
-    return <WalletOnboarding onWalletReady={handleWalletReady} />;
+    return <WalletOnboarding password={password} onWalletReady={handleWalletReady} />;
   }
 
   return (
