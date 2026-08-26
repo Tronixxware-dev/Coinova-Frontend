@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import WalletOnboarding from '../components/WalletOnboarding';
 
 export default function Signup() {
   const { signup, loading, error } = useAuth();
@@ -8,15 +9,24 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showWalletSetup, setShowWalletSetup] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     try {
       await signup({ email, username, password });
-      navigate('/', { replace: true });
+      setShowWalletSetup(true);
     } catch {
       // error is already surfaced via context
     }
+  }
+
+  function handleWalletReady() {
+    navigate('/', { replace: true });
+  }
+
+  if (showWalletSetup) {
+    return <WalletOnboarding onWalletReady={handleWalletReady} />;
   }
 
   return (

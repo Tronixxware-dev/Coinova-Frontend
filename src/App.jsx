@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { WalletProvider } from './context/WalletContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -13,44 +14,46 @@ import Account from './pages/Account';
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Balance />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/trade"
-          element={
-            <ProtectedRoute>
-              <Trade />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/staking"
-          element={
-            <ProtectedRoute>
-              <Staking />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/account"
-          element={
-            <ProtectedRoute>
-              <Account />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      <WalletProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Balance />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trade"
+            element={
+              <ProtectedRoute>
+                <Trade />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/staking"
+            element={
+              <ProtectedRoute>
+                <Staking />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </WalletProvider>
     </AuthProvider>
   );
 }

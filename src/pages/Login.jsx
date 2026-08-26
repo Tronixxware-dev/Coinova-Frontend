@@ -1,21 +1,31 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import WalletUnlock from '../components/WalletUnlock';
 
 export default function Login() {
   const { login, loading, error } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showWalletUnlock, setShowWalletUnlock] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     try {
       await login({ email, password });
-      navigate('/', { replace: true });
+      setShowWalletUnlock(true);
     } catch {
       // error is already surfaced via context
     }
+  }
+
+  function handleUnlocked() {
+    navigate('/', { replace: true });
+  }
+
+  if (showWalletUnlock) {
+    return <WalletUnlock onUnlocked={handleUnlocked} />;
   }
 
   return (
@@ -58,7 +68,6 @@ export default function Login() {
         >
           {loading ? 'Logging in…' : 'Log in'}
         </button>
-
         <p className="text-sm text-slate-400 text-center">
           Don't have an account?{' '}
           <Link to="/signup" className="text-emerald-400 hover:underline">

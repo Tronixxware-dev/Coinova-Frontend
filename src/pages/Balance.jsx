@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { usePrices } from '../hooks/usePrices';
 import NavBar from '../components/NavBar';
 import WalletPanel from '../components/WalletPanel';
-import CryptoWalletPanel from '../components/CryptoWalletPanel';
+import SelfCustodyWalletPanel from '../components/SelfCustodyWalletPanel';
 
 function usdFormat(n) {
   return Number(n).toLocaleString(undefined, {
@@ -20,7 +19,6 @@ export default function Balance() {
   const { prices } = usePrices();
 
   const [wallets, setWallets] = useState([]);
-  const [staking, setStaking] = useState(null);
   const [walletBusy, setWalletBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -30,16 +28,11 @@ export default function Balance() {
     setWallets(data.wallets);
   }, [accessToken]);
 
-  const refreshStaking = useCallback(async () => {
-    const data = await api.getStaking(accessToken);
-    setStaking(data);
-  }, [accessToken]);
-
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setLoadError(null);
-    Promise.all([refreshWallet(), refreshStaking()])
+    refreshWallet()
       .catch((err) => {
         if (!cancelled) setLoadError(err.message || 'Failed to load your balances.');
       })
@@ -49,7 +42,7 @@ export default function Balance() {
     return () => {
       cancelled = true;
     };
-  }, [refreshWallet, refreshStaking]);
+  }, [refreshWallet]);
 
   const rows = useMemo(() => {
     return wallets.map((w) => {
@@ -60,8 +53,7 @@ export default function Balance() {
   }, [wallets, prices]);
 
   const walletUsdTotal = rows.reduce((sum, r) => sum + r.usdValue, 0);
-  const stakedUsdTotal = staking ? Number(staking.totalPrincipal) + Number(staking.totalAccruedInterest) : 0;
-  const portfolioTotal = walletUsdTotal + stakedUsdTotal;
+  const portfolioTotal = walletUsdTotal;
 
   async function handleDeposit(payload) {
     setWalletBusy(true);
@@ -97,14 +89,6 @@ export default function Balance() {
         <div className="text-sm text-slate-400 uppercase tracking-wide">Total Portfolio Value</div>
         <div className="text-3xl sm:text-4xl font-bold font-mono mt-1">
           {loading ? '—' : usdFormat(portfolioTotal)}
-        </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-sm text-slate-400">
-          <span>
-            Wallet: <span className="text-white font-mono">{usdFormat(walletUsdTotal)}</span>
-          </span>
-          <span>
-            Staked + Interest: <span className="text-white font-mono">{usdFormat(stakedUsdTotal)}</span>
-          </span>
         </div>
       </div>
 
@@ -142,41 +126,7 @@ export default function Balance() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <WalletPanel wallets={wallets} onDeposit={handleDeposit} onWithdraw={handleWithdraw} busy={walletBusy} />
-
-        <div className="bg-slate-800 rounded-xl p-4 space-y-4 flex flex-col">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">Staking</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
-              Up to 4.00%/day
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-900/40 rounded-lg p-3">
-              <div className="text-xs text-slate-500">Total Staked</div>
-              <div className="text-lg font-mono text-white">
-                {staking ? Number(staking.totalPrincipal).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}
-              </div>
-            </div>
-            <div className="bg-slate-900/40 rounded-lg p-3">
-              <div className="text-xs text-slate-500">Unclaimed Interest</div>
-              <div className="text-lg font-mono text-emerald-400">
-                {staking
-                  ? Number(staking.totalAccruedInterest).toLocaleString(undefined, { maximumFractionDigits: 4 })
-                  : '—'}
-              </div>
-            </div>
-          </div>
-          <Link
-            to="/staking"
-            className="mt-auto w-full text-center bg-emerald-500 hover:bg-emerald-400 text-slate-900 text-sm font-semibold rounded-lg py-2 transition"
-          >
-            Manage Staking →
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CryptoWalletPanel accessToken={accessToken} onBalanceChange={refreshWallet} />
+        <SelfCustodyWalletPanel />
       </div>
     </div>
   );
